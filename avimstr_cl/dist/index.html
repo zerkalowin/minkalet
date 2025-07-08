@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Untitled</title>
+  <link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Предсказатель Компаньон</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <div id="loading-screen" class="screen active">
+            <img src="logo.png" alt="Логотип игры" id="game-logo">
+            <button id="start-loading-btn" class="main-button">ЗАГРУЗИТЬ ИГРУ</button>
+        </div>
+
+        <div id="main-menu-screen" class="screen hidden">
+            <h1>ПРЕДСКАЗАТЕЛЬ</h1>
+            <div class="menu-buttons">
+                <button id="start-game-btn" class="main-button">НАЧАТЬ</button>
+                <button id="language-btn-rus" class="main-button">Смена языков RUS</button>
+                <button id="language-btn-eng" class="main-button">Смена языков ENG</button>
+                <button id="back-button" class="main-button">Все игры = назад</button>
+            </div>
+        </div>
+
+        <div id="credits-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Введите сумму кредитов</h2>
+                <input type="number" id="credits-input" placeholder="Например, 300" min="1">
+                <button id="confirm-credits-btn" class="main-button">ПОДТВЕРДИТЬ</button>
+                <button id="close-credits-modal" class="secondary-button">Отмена</button>
+            </div>
+        </div>
+
+        <div id="connection-modal" class="modal hidden">
+            <div class="modal-content">
+                <p id="connection-text"></p>
+            </div>
+        </div>
+
+        <div id="prediction-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>ПОЛЕТ ЗАВЕРШЕН</h2>
+                <p>Анализ<span id="ellipsis"></span></p>
+                <div id="prediction-results">
+                    </div>
+            </div>
+        </div>
+
+        <div id="analysis-bar-container" class="hidden">
+            <p>Идет анализ...</p>
+            <div class="progress-bar-background">
+                <div id="analysis-progress-bar" class="progress-bar-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+<!-- partial -->
+  <script  src="./script.js"></script>
+
+</body>
+</html>

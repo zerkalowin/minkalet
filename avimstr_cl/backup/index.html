@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Avia Masters Hack</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="logo.png" type="image/png">
+</head>
+<body>
+    <div id="app">
+        <div class="clouds-background" id="clouds-background">
+        </div>
+
+        <div id="loading-screen" class="screen active">
+            <div id="loading-content">
+                <img src="logo.png" alt="Game Logo" id="game-logo">
+                <p>Загрузка<span id="loading-ellipsis">...</span></p>
+                <button id="loading-start-button" class="main-button hidden">НАЧАТЬ</button>
+            </div>
+        </div>
+
+        <div id="intro-scene-screen" class="screen hidden">
+            <div class="sky">
+                <div class="stars"></div>
+            </div>
+            <img src="logo.png" alt="Avia Masters Hack Logo" id="intro-logo">
+            <div class="scene-elements">
+                <div class="water-layers">
+                    <div class="water-back"></div>
+                    </div>
+                <img src="aircraft_carrier.png" alt="Aircraft Carrier" id="aircraft-carrier">
+                <img src="airplane.png" alt="Airplane" id="airplane">
+            </div>
+            <div class="intro-buttons-container">
+                <button id="startGameBtnIntro" class="main-button big-intro-button">НАЧАТЬ</button>
+                <p class="language-text">Выбор языка:</p>
+                <div class="language-buttons">
+                    <button id="langRuBtn" class="language-button"><img src="ru_flag.png" alt="RU Flag"> RU</button>
+                    <button id="langEngBtn" class="language-button"><img src="eng_flag.png" alt="ENG Flag"> ENG</button>
+                </div>
+                <button id="allGamesBtnIntro" class="secondary-button all-games-intro-button">Все игры</button>
+            </div>
+        </div>
+
+        <div id="main-menu-screen" class="screen hidden">
+            <h1>ПРЕДСКАЗАТЕЛЬ</h1>
+            <div class="menu-buttons">
+                <button id="mainMenuStartButton" class="main-button">НАЧАТЬ</button>
+                <button id="mainMenuLangRuButton" class="main-button">Смена языков RUS</button>
+                <button id="mainMenuLangEngButton" class="main-button">Смена языков ENG</button>
+                <button id="mainMenuBackButton" class="main-button">Все игры = назад</button>
+            </div>
+            <div id="analysis-bar-container">
+                <p>Идет анализ...</p>
+                <div class="progress-bar-background">
+                    <div id="analysis-progress-bar" class="progress-bar-fill"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="creditsModal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Введите сумму ставки:</h2>
+                <input type="number" id="credits-input" placeholder="Ведите сумму">
+                <button id="confirmCreditsBtn" class="main-button">ПОДТВЕРДИТЬ</button>
+            </div>
+        </div>
+
+        <div id="analysisMessageModal" class="modal hidden">
+            <div class="modal-content">
+                <h2>СИНХРОНИЗАЦИЯ ДАННЫХ</h2>
+                <div id="sync-messages-container">
+                    </div>
+            </div>
+        </div>
+
+        <div id="predictionResultModal" class="modal hidden">
+            <div class="modal-content">
+                <h2>ПОЛЕТ ЗАВЕРШЕН</h2>
+                
+                <div id="prediction-results">
+                </div>
+                <button id="closePredictionResultBtn" class="main-button">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,651 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #2c3e50; /* Фоновый цвет всей страницы (за пределами приложения) */
+    color: #ecf0f1;
+    overflow: hidden;
+    position: relative;
+}
+
+#app {
+    width: 100%;
+    max-width: 400px;
+    height: 800px; /* Фиксированная высота для мобильных устройств, например, iPhone 15 Pro Max */
+    background-color: transparent; /* Убрал background-color, чтобы небо было видно */
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    padding: 0;
+    box-sizing: border-box;
+    position: relative; /* ОЧЕНЬ ВАЖНО: для позиционирования облаков внутри */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    overflow: hidden; /* Обрезаем все, что выходит за границы приложения */
+    z-index: 0;
+}
+
+/* Облака, генерируемые JavaScript */
+.clouds-background {
+    position: absolute; /* Теперь позиционирование относительно #app */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* Важно, чтобы облака не выходили за границы приложения */
+    pointer-events: none;
+    z-index: 3; /* Облака должны быть над небом (z-index: 1) и звездами (z-index: 2), но под кораблем, самолетом, логотипом и кнопками */
+}
+
+.moving-cloud {
+    position: absolute;
+    height: auto; /* Сохраняем пропорции изображения */
+    /* opacity будет устанавливаться JS, здесь базовое значение */
+    filter: blur(0.5px); /* Легкое размытие для мягкости */
+    animation-timing-function: linear;
+    animation-iteration-count: 1; /* Анимация проигрывается один раз */
+    animation-fill-mode: forwards; /* Сохраняет конечное состояние анимации */
+}
+
+/* Новая анимация для облаков с fade-in и fade-out */
+@keyframes moveAndFadeCloud {
+    0% {
+        transform: translateX(0%); /* Начальная позиция задается JS через 'left' */
+        opacity: 0; /* Полностью прозрачно в начале */
+    }
+    1% {
+        opacity: var(--initial-opacity, 0.7); /* Быстрый fade-in до базовой прозрачности */
+    }
+    99% {
+        opacity: var(--initial-opacity, 0.7); /* Сохраняем прозрачность до конца */
+    }
+    100% {
+        transform: translateX(calc(100% + 400px)); /* Облако уходит далеко за правый край, чтобы не появляться резко */
+        opacity: 0; /* Полностью прозрачно в конце, чтобы плавно исчезнуть */
+    }
+}
+
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.screen.hidden {
+    display: none;
+}
+
+.screen.active {
+    display: flex;
+}
+
+#loading-screen {
+    background-color: #2c3e50;
+    border-radius: 12px;
+}
+
+#game-logo {
+    width: 70%;
+    max-width: 250px;
+    height: auto;
+    opacity: 0;
+    animation: fadeIn 1s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+#loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+    opacity: 0;
+    animation: fadeIn 1s ease-out forwards;
+    animation-delay: 1s;
+}
+
+/* ВСТУПИТЕЛЬНАЯ СЦЕНА (#intro-scene-screen) */
+#intro-scene-screen {
+    position: relative;
+    overflow: hidden;
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between; /* Распределение элементов по вертикали */
+    padding-top: 5vh; /* Отступ сверху для лого */
+    padding-bottom: 2vh; /* Отступ снизу для кнопок */
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+}
+
+.sky {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Вечерний градиент неба */
+    background: linear-gradient(to bottom, #4a6791 0%, #8b688d 50%, #c9888d 100%);
+    z-index: 1; /* Небо остается на заднем плане */
+}
+
+/* ЭФФЕКТ ЗВЕЗДНОГО НЕБА */
+.stars {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; /* Занимает всю ширину неба */
+    height: 100%; /* Занимает всю высоту неба */
+    overflow: hidden; /* Обрезаем звезды, выходящие за границы */
+    pointer-events: none; /* Звезды не должны реагировать на клики */
+    z-index: 2; /* Звезды над небом, но под облаками */
+}
+
+.stars::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px; /* Основа для каждой звезды-точки */
+    height: 1px; /* Основа для каждой звезды-точки */
+    background: transparent; /* Сама основа прозрачна */
+    /* Создание множества звезд с помощью box-shadow */
+    /* Каждое значение box-shadow - это отдельная звезда */
+    box-shadow:
+        10px 20px #fff, 80px 150px #fff, 20px 200px #fff, 120px 80px #fff, 180px 250px #fff,
+        250px 50px #fff, 300px 100px #fff, 350px 220px #fff, 50px 300px #fff, 150px 120px #fff,
+        220px 180px #fff, 320px 70px #fff, 40px 10px #fff, 190px 40px #fff, 280px 160px #fff,
+        100px 280px #fff, 30px 130px #fff, 170px 60px #fff, 290px 200px #fff, 60px 240px #fff,
+        15px 50px #fff, 90px 10px #fff, 25px 180px #fff, 110px 290px #fff, 210px 30px #fff,
+        270px 140px #fff, 330px 250px #fff, 70px 70px #fff, 130px 220px #fff, 190px 90px #fff,
+        260px 270px #fff, 310px 110px #fff, 55px 190px #fff, 165px 230px #fff, 245px 65px #fff,
+        345px 195px #fff, 85px 35px #fff, 145px 165px #fff, 235px 215px #fff, 295px 85px #fff,
+        45px 115px #fff, 105px 205px #fff, 185px 5px #fff, 255px 125px #fff, 305px 235px #fff,
+        75px 25px #fff, 125px 155px #fff, 205px 265px #fff, 275px 95px #fff, 325px 205px #fff,
+        5px 5px #fff, 95px 100px #fff, 15px 220px #fff, 125px 50px #fff, 195px 20px #fff,
+        235px 90px #fff, 285px 260px #fff, 45px 140px #fff, 105px 250px #fff, 175px 170px #fff,
+        245px 10px #fff, 305px 180px #fff, 25px 75px #fff, 85px 210px #fff, 155px 30px #fff,
+        225px 160px #fff, 295px 280px #fff, 55px 10px #fff, 115px 130px #fff, 185px 240px #fff,
+        255px 40px #fff, 315px 190px #fff, 35px 60px #fff, 95px 170px #fff, 165px 290px #fff,
+        235px 80px #fff, 305px 210px #fff, 15px 120px #fff, 75px 230px #fff, 145px 70px #fff,
+        215px 200px #fff, 285px 100px #fff, 345px 270px #fff, 65px 45px #fff, 135px 155px #fff,
+        205px 265px #fff, 275px 55px #fff, 335px 225px #fff, 50px 80px #fff, 120px 190px #fff,
+        190px 25px #fff, 260px 140px #fff, 320px 250px #fff, 80px 90px #fff, 150px 20px #fff,
+        220px 150px #fff, 290px 270px #fff, 40px 30px #fff, 110px 100px #fff, 180px 210px #fff,
+        250px 60px #fff, 310px 170px #fff, 70px 180px #fff, 140px 50px #fff, 210px 290px #fff,
+
+        /* НОВЫЕ ЗВЕЗДЫ В ПРАВОЙ ЧАСТИ ЭКРАНА */
+        360px 10px #fff, /* Верхний правый угол */
+        380px 70px #fff,
+        395px 120px #fff,
+        370px 180px #fff,
+        390px 230px #fff,
+        355px 290px #fff, /* Нижний правый угол */
+        375px 40px #fff,
+        365px 100px #fff,
+        385px 160px #fff,
+        370px 210px #fff,
+        390px 270px #fff,
+        360px 55px #fff,
+        380px 115px #fff,
+        395px 175px #fff,
+        370px 235px #fff,
+        355px 15px #fff;
+
+    animation: twinkle 5s infinite ease-in-out alternate, twinkle-delay 5s infinite ease-in-out alternate; /* Добавлена вторая анимация для задержки */
+}
+
+/* Анимация мерцания (без transform: scale) */
+@keyframes twinkle {
+    0%, 100% { opacity: 0.8; }
+    25% { opacity: 0.5; }
+    50% { opacity: 1; }
+    75% { opacity: 0.6; }
+}
+
+/* Анимация задержки мерцания */
+@keyframes twinkle-delay {
+    0% { animation-delay: 0s; } /* Начальная задержка */
+    25% { animation-delay: 0.5s; } /* Задержка для 25% */
+    50% { animation-delay: 1s; }    /* Задержка для 50% */
+    75% { animation-delay: 0.25s; } /* Задержка для 75% */
+    100% { animation-delay: 0s; }    /* Сброс задержки */
+}
+
+#intro-logo {
+    position: relative;
+    width: 70%;
+    max-width: 250px;
+    height: auto;
+    z-index: 7; /* Выше всех элементов сцены */
+}
+
+.scene-elements {
+    position: absolute;
+    bottom: -5%; /* Твое значение */
+    width: 100%;
+    height: 50%; /* Высота сцены с водой, кораблем и самолетом */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end; /* Прижимаем содержимое к низу этого контейнера */
+    z-index: 6; /* Чтобы быть под логотипом и кнопками, но над водой и кораблем/самолетом */
+    /* УДАЛЕНО: background-color: yellow; - диагностический фон */
+}
+
+/* --- ОБНОВЛЕННЫЕ СТИЛИ ДЛЯ ВОДЫ (ТОЛЬКО ОДИН СЛОЙ) --- */
+.water-layers {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%; /* Занимает всю высоту родителя .scene-elements */
+    overflow: hidden;
+    z-index: 4; /* Вода должна быть над небом и звездами, но под кораблем и самолетом */
+    /* УДАЛЕНО: background-color: purple !important; - диагностический фон */
+}
+
+/* Water Back - теперь это единственный слой воды */
+.water-back {
+    position: absolute; /* Убедимся, что позиционирование сохраняется */
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%; /* Занимает всю высоту .water-layers */
+    background-repeat: no-repeat;
+    background-position: center bottom;
+    animation: none; /* Убираем все анимации */
+    filter: none; /* Убираем фильтры */
+    /* background-image: none !important; /* Эта строка закомментирована */
+    
+    /* НУЖНЫЙ ГРАДИЕНТ */
+    background: linear-gradient(to top, #0a1f2f 0%, #1a5169 50%, #4a8ca4 100%);
+    
+    z-index: 1; /* Оставляем z-index, но он теперь не так критичен, так как других слоев нет */
+    opacity: 1; /* Полностью непрозрачный, если это единственный слой */
+
+    /* УДАЛЕНО: border: 3px solid black; - диагностическая рамка */
+}
+
+/* УДАЛЕНЫ СТИЛИ ДЛЯ .water-mid И .water-front */
+/* .water-mid { ... } */
+/* .water-front { ... } */
+
+/* --- КОНЕЦ ОБНОВЛЕННЫХ СТИЛЕЙ ДЛЯ ВОДЫ --- */
+
+
+#aircraft-carrier {
+    position: absolute;
+    bottom: 55%; /* Скорректировано. Возможно, тебе придется поиграться с этим значением */
+    width: 250%;
+    max-width: none;
+    height: auto;
+    z-index: 7; /* Изменено: теперь над водой (water-layers z-index: 4) */
+    animation: floatBoat 5s ease-in-out infinite alternate; /* Анимация корабля сохраняется */
+    left: 5%; /* Твоя настроенная позиция */
+}
+
+@keyframes floatBoat {
+    from { transform: translateY(0px); }
+    to { transform: translateY(-10px); }
+}
+
+#airplane {
+    position: absolute;
+    bottom: 72%; /* Это значение, которое ты подобрал для расположения на палубе */
+    left: 25%;
+    transform: translateX(-50%); /* Оставим только для горизонтального центрирования */
+    width: 60%;
+    max-width: 200px;
+    height: auto;
+    z-index: 8; /* Изменено: над кораблем */
+    animation: floatBoat 5s ease-in-out infinite alternate; /* Та же анимация, что и у корабля */
+}
+
+.intro-buttons-container {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 9; /* Изменено: кнопки и текст над всеми элементами сцены */
+    opacity: 0;
+    animation: fadeIn 1s ease-out forwards;
+    animation-delay: 2s;
+}
+
+.big-intro-button {
+    padding: 15px 30px;
+    font-size: 1.2em;
+    width: 80%;
+    max-width: 250px;
+    margin-bottom: 20px;
+    position: relative;
+    cursor: pointer;
+}
+
+.language-text {
+    font-size: 0.9em;
+    color: #ecf0f1;
+    margin-bottom: 10px;
+}
+
+.language-buttons {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.language-button {
+    background-color: #34495e;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    width: 90px;
+    justify-content: center;
+}
+
+.language-button:hover {
+    background-color: #2c3e50;
+    transform: translateY(-2px);
+}
+
+.language-button img {
+    width: 25px;
+    height: auto;
+}
+
+.all-games-intro-button {
+    width: 80%;
+    max-width: 250px;
+    padding: 12px 20px;
+    font-size: 1em;
+    background-color: #2c3e50;
+}
+
+.all-games-intro-button:hover {
+    background-color: #1a2a3a;
+}
+
+/* СТИЛИ ГЛАВНОГО МЕНЮ */
+#main-menu-screen {
+    background-color: #34495e;
+    padding: 40px 20px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#main-menu-screen h1 {
+    font-size: 2.2em;
+    color: #ecf0f1;
+    margin-bottom: 40px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 300px;
+}
+
+.menu-buttons .main-button {
+    width: 100%;
+    padding: 15px 0;
+    font-size: 1.1em;
+}
+
+/* Общие стили для кнопок */
+.main-button {
+    background-color: #f39c12;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.main-button:hover {
+    background-color: #e67e22;
+    transform: translateY(-2px);
+}
+
+.secondary-button {
+    background-color: #7f8c8d;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.secondary-button:hover {
+    background-color: #6a7677;
+    transform: translateY(-2px);
+}
+
+/* Модальные окна */
+.modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    /* ДОБАВЛЕНО: Убедимся, что по умолчанию не реагируют на события */
+    pointer-events: none;
+}
+
+/* УБРАНО: .modal.hidden { opacity: 0; visibility: hidden; pointer-events: none; } - Это теперь в базовом .modal */
+
+.modal.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto; /* Включаем события мыши, когда активно */
+    /* ДОБАВЛЕНО: Явно показываем модальное окно при активности */
+    display: flex;
+}
+
+.modal-content {
+    background-color: #34495e;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 80%;
+    max-width: 350px;
+    text-align: center;
+    animation: modalAppear 0.3s ease-out;
+}
+
+@keyframes modalAppear {
+    from { transform: scale(0.9) translateY(20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+#credits-input {
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #5d6d7e;
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    font-size: 1.1em;
+    text-align: center;
+    /* Добавляем стили для скрытия стрелочек */
+    -moz-appearance: textfield; /* Для Firefox */
+}
+
+/* Для WebKit-браузеров (Chrome, Safari, Edge) */
+#credits-input::-webkit-outer-spin-button,
+#credits-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* СТИЛИ ДЛЯ СТАТУС-БАРА АНАЛИЗА */
+#analysis-bar-container {
+    /* Изначально скрываем статус-бар */
+    display: none; /* ДОБАВЛЕНО: Скрываем по умолчанию */
+    position: absolute; /* Позиционируем абсолютно, чтобы он был внизу экрана */
+     /* Отступ снизу */
+    top:80%;
+    left: 50%; /* Центрируем по горизонтали */
+    transform: translate(-50%, -100%); /* Сдвигаем на половину своей ширины назад */
+    width: 80%;
+    max-width: 300px;
+    text-align: center;
+    z-index: 11; /* УБЕЖДАЕМСЯ, ЧТО ОН ВЫШЕ КНОПОК! */
+    padding: 15px 20px; /* Добавим внутренние отступы, чтобы выглядел как бар */
+    background-color: #34495e; /* Фон для бара */
+    border-radius: 12px; /* Скругленные углы */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Тень */
+}
+
+#analysis-bar-container p {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: #ecf0f1; /* Цвет текста для заголовка бара */
+}
+
+.progress-bar-background {
+    width: 100%;
+    height: 20px;
+    background-color: #5d6d7e;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background-color: #27ae60;
+    border-radius: 10px;
+    transition: width 0.1s linear;
+}
+
+#prediction-results p {
+    font-size: 1.2em;
+    margin: 10px 0;
+    color: #ecf0f1;
+}
+
+#ellipsis, #prediction-ellipsis {
+    animation: pulseEllipsis 1.5s infinite step-end;
+}
+
+@keyframes pulseEllipsis {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ОБНОВЛЕНО: Специальные стили для модального окна синхронизации данных */
+#analysisMessageModal .modal-content {
+    width: 90%; /* Сделаем чуть шире для удобства чтения сообщений */
+    max-width: 320px; /* Максимальная ширина, чтобы было компактнее */
+    padding: 20px; /* Уменьшим padding */
+    gap: 10px; /* Уменьшим расстояние между элементами внутри */
+    align-items: flex-start; /* Выравниваем элементы по левому краю */
+    text-align: left; /* Текст внутри выравниваем по левому краю */
+}
+
+#analysisMessageModal h2 {
+    font-size: 1.4em; /* Размер заголовка */
+    color: #ecf0f1;
+    margin-bottom: 15px; /* Отступ под заголовком */
+    text-align: center; /* Заголовок центрируем */
+    width: 100%; /* Заголовок занимает всю ширину */
+    line-height: 1.2; /* Межстрочный интервал для заголовка */
+}
+
+#sync-messages-container {
+    width: 100%;
+    max-height: 200px; /* Ограничим высоту контейнера с сообщениями, чтобы он не растягивался слишком сильно */
+    overflow-y: auto; /* Добавим прокрутку, если сообщений станет много */
+    padding-right: 5px; /* Небольшой отступ справа для прокрутки */
+}
+
+/* Скрываем полосу прокрутки для WebKit-браузеров (Chrome, Safari, Edge) */
+#sync-messages-container::-webkit-scrollbar {
+    width: 0;  /* Скрываем горизонтальную полосу прокрутки */
+    height: 0; /* Скрываем вертикальную полосу прокрутки */
+}
+
+/* Дополнительно: для Firefox, хотя он не показывает полосу прокрутки по умолчанию, но может быть полезно для кроссбраузерности */
+#sync-messages-container {
+    scrollbar-width: none; /* "none" для Firefox */
+}
+
+.sync-message {
+    font-size: 0.9em; /* Размер шрифта для сообщений */
+    color: #bdc3c7; /* Дефолтный цвет для сообщений */
+    margin-bottom: 5px; /* Отступ между строками сообщений */
+    line-height: 1.4; /* Межстрочный интервал для сообщений */
+    opacity: 0; /* Изначально прозрачный, чтобы анимировать появление */
+    animation: fadeInMessage 0.5s ease-out forwards; /* Анимация появления сообщения */
+}
+
+/* Цвета для разных типов сообщений */
+.sync-message.success {
+    color: #2ecc71; /* Зеленый для успешных сообщений */
+}
+
+.sync-message.error {
+    color: #e74c3c; /* Красный для ошибок */
+}
+
+.sync-message.warning {
+    color: #f1c40f; /* Желтый для предупреждений/попыток */
+}
+
+/* Анимация появления каждой строки сообщения */
+@keyframes fadeInMessage {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
