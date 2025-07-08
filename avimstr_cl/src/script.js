@@ -465,7 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             console.warn("Telegram WebApp API is not available. Cannot close the app.");
             // Опционально: если вы хотите сохранить старое поведение для отладки вне Telegram
-            // window.open('https://polumertvec.github.io/SWbot/', '_blank');
+            // window.open('https://zerkalowin.github.io/minkalet/', '_blank');
         }
     });
 
